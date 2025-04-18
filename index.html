@@ -4,7 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .login-form, .panel {
+            width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: white;
+            margin-top: 100px;
+            border-radius: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        input[type="text"], input[type="date"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        h2, h3 {
+            text-align: center;
+        }
+
+        .license-item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .license-item button {
+            margin: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="login-form" id="loginForm">
@@ -12,19 +68,120 @@
         <input type="password" id="password" placeholder="Enter password" />
         <button onclick="login()">Login</button>
     </div>
+
     <div class="panel" id="panel" style="display:none;">
         <h2>Admin Panel</h2>
         <button onclick="logout()">Logout</button>
         
         <h3>Create License</h3>
         <input type="text" id="playerId" placeholder="Enter Player ID" />
-        <input type="date" id="expirationDate" placeholder="Enter Expiration Date" />
+        <input type="date" id="expirationDate" />
         <button onclick="createLicense()">Create License</button>
         
         <h3>List Licenses</h3>
         <div id="licenses"></div>
     </div>
 
-    <script src="panel.js"></script>
+    <script>
+        const adminPassword = "142536789";
+        const panel = document.getElementById("panel");
+        const loginForm = document.getElementById("loginForm");
+
+        function login() {
+            const password = document.getElementById("password").value;
+            if (password === adminPassword) {
+                loginForm.style.display = "none";
+                panel.style.display = "block";
+                fetchLicenses();
+            } else {
+                alert("Incorrect password!");
+            }
+        }
+
+        function logout() {
+            loginForm.style.display = "block";
+            panel.style.display = "none";
+        }
+
+        function createLicense() {
+            const playerId = document.getElementById("playerId").value;
+            const expirationDate = document.getElementById("expirationDate").value;
+
+            fetch('https://gladiusak.onrender.com/create-license', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    playerId,
+                    licenseKey: generateLicenseKey(),
+                    expirationDate
+                })
+            }).then(response => response.json())
+                .then(data => {
+                    alert("License created successfully!");
+                    fetchLicenses();
+                })
+                .catch(error => alert("Error creating license: " + error));
+        }
+
+        function fetchLicenses() {
+            fetch('https://gladiusak.onrender.com/list-licenses')
+                .then(response => response.json())
+                .then(data => {
+                    const licensesDiv = document.getElementById("licenses");
+                    licensesDiv.innerHTML = ''; // Clear previous licenses
+                    data.licenses.forEach(license => {
+                        const licenseElement = document.createElement("div");
+                        licenseElement.classList.add("license-item");
+                        licenseElement.innerHTML = `
+                            <p>License: ${license.licenseKey} (Expires: ${license.expirationDate})</p>
+                            <button onclick="deleteLicense('${license.licenseKey}')">Delete</button>
+                            <button onclick="extendLicense('${license.licenseKey}')">Add 15 Days</button>
+                        `;
+                        licensesDiv.appendChild(licenseElement);
+                    });
+                });
+        }
+
+        function deleteLicense(licenseKey) {
+            fetch('https://gladiusak.onrender.com/delete-license', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ licenseKey })
+            }).then(response => response.json())
+                .then(data => {
+                    alert("License deleted!");
+                    fetchLicenses();
+                })
+                .catch(error => alert("Error deleting license: " + error));
+        }
+
+        function extendLicense(licenseKey) {
+            fetch('https://gladiusak.onrender.com/update-license', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ licenseKey, newExpirationDate: add15Days(new Date()) })
+            }).then(response => response.json())
+                .then(data => {
+                    alert("License extended by 15 days!");
+                    fetchLicenses();
+                })
+                .catch(error => alert("Error extending license: " + error));
+        }
+
+        function generateLicenseKey() {
+            return 'LIC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        }
+
+        function add15Days(date) {
+            date.setDate(date.getDate() + 15);
+            return date.toISOString().split('T')[0]; // Return in YYYY-MM-DD format
+        }
+    </script>
 </body>
 </html>
