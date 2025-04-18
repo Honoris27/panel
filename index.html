@@ -1,184 +1,262 @@
+<!-- index.html - Admin Girişli Lisans Paneli -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <title>GladiusAK Admin Paneli</title>
+  <meta charset="UTF-8">
+  <title>Lisans Yönetim Paneli</title>
   <style>
-    body {
-      font-family: 'Georgia', serif;
-      background: url('https://www.transparenttextures.com/patterns/paper-fibers.png'), #2c1e13;
-      color: #fffbe6;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: gold;
-      text-shadow: 1px 1px #000;
-    }
-    .box {
-      background: rgba(0, 0, 0, 0.6);
-      border: 2px solid #a67c00;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    input, button {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 6px;
-      border: none;
-      font-family: inherit;
-    }
-    input {
-      width: 200px;
-    }
-    button {
-      background-color: #a67c00;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #c08c14;
-    }
-    .license {
-      border-bottom: 1px solid #ccc;
-      padding: 10px 0;
-    }
-    .hidden {
-      display: none;
-    }
-    .icon {
-      margin-right: 6px;
-    }
+body {
+  font-family: 'Georgia', serif;
+  background: url('https://static.wikia.nocookie.net/gladiatus/images/3/39/Bg_body_game.jpg') repeat center center fixed;
+  background-size: cover;
+  padding: 30px;
+  color: #fff;
+}
+
+h2 {
+  color: #ffd700;
+  text-shadow: 2px 2px 5px #000;
+}
+
+nav, .protected {
+  display: none;
+}
+
+nav {
+  margin-bottom: 20px;
+}
+
+nav button {
+  margin-right: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background: linear-gradient(to bottom, #d4af37, #a67c00);
+  color: #fff;
+  border: 2px solid #8b6914;
+  cursor: pointer;
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px #000;
+  font-weight: bold;
+  text-shadow: 1px 1px #000;
+}
+
+nav button.active {
+  background: linear-gradient(to bottom, #ffd700, #b8860b);
+}
+
+section {
+  display: none;
+  max-width: 900px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 20px;
+  border: 2px solid #a67c00;
+  border-radius: 15px;
+  box-shadow: 3px 3px 10px #000;
+}
+
+section.active {
+  display: block;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+input {
+  padding: 8px;
+  margin-top: 5px;
+  width: 250px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button.create, button.delete, button.extend {
+  margin-top: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  background: #228B22;
+  color: white;
+  border: 1px solid #145214;
+  cursor: pointer;
+  border-radius: 8px;
+  box-shadow: 1px 1px 5px #000;
+}
+
+button.delete {
+  background: #B22222;
+  border-color: #7a1b1b;
+}
+
+button.extend {
+  background: #DAA520;
+  border-color: #8B6914;
+}
+
+.result-box, pre {
+  white-space: pre-wrap;
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin-top: 10px;
+  border-radius: 10px;
+  font-family: 'Courier New', monospace;
+}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>⚔️ GladiusAK Admin Paneli</h1>
+  <div id="login">
+    <h2>🔐 Admin Girişi</h2>
+    <label for="password">Şifre:</label>
+    <input type="password" id="password">
+    <button onclick="login()">Giriş Yap</button>
+    <p id="loginError" style="color:red;"></p>
+  </div>
 
-    <div id="login" class="box">
-      <p>🔐 Admin Girişi:</p>
-      <input type="password" id="adminPass" placeholder="Şifre" />
-      <button onclick="checkLogin()">Giriş Yap</button>
-    </div>
+  <div class="protected">
+    <h2>🔧 Lisans Paneli</h2>
+    <nav>
+      <button onclick="switchTab('create')" id="tab-create" class="active">➕ Lisans Oluştur</button>
+      <button onclick="switchTab('list')" id="tab-list">📄 Lisansları Gör</button>
+    </nav>
 
-    <div id="panel" class="box hidden">
-      <div>
-        <p>🛡️ Lisans Ekle:</p>
-        <input type="text" id="playerId" placeholder="Player ID" />
-        <input type="number" id="days" placeholder="Gün (örn: 15)" />
-        <button onclick="addLicense()">+ Lisans Ekle</button>
-      </div>
+    <section id="create" class="active">
+      <label for="playerId">🎮 Player ID:</label>
+      <input type="text" id="playerId" placeholder="Örn: 17053">
+      <label for="days">📅 Geçerlilik (gün):</label>
+      <input type="number" id="days" placeholder="Örn: 30">
+      <button class="create" onclick="createLicense()">Lisans Oluştur</button>
+      <div id="createResult" class="result-box"></div>
+    </section>
 
-      <hr style="margin: 20px 0; border-color: #a67c00;" />
-
-      <div>
-        <p>📜 Kayıtlı Lisanslar:</p>
-        <div id="licenseList">Yükleniyor...</div>
-      </div>
-    </div>
+    <section id="list">
+      <button onclick="fetchLicenses()">🔄 Yenile</button>
+      <input type="text" id="searchInput" placeholder="Player ID ara..." oninput="filterLicenses()" style="margin-left: 20px; padding: 8px; width: 200px;">
+      <button onclick="exportLicenses()" style="margin-left: 10px;">📥 JSON Dışa Aktar</button>
+      <div id="licenseList" style="margin-top: 20px;"></div>
+    </section>
   </div>
 
   <script>
-    const API_URL = "https://gladiusak.onrender.com";
+    const API_BASE = "https://gladiusak.onrender.com";
+    const ADMIN_PASSWORD = 'admin123';
 
-    function checkLogin() {
-      const pass = document.getElementById("adminPass").value;
-      if (pass === "142536789") {
-        document.getElementById("login").classList.add("hidden");
-        document.getElementById("panel").classList.remove("hidden");
-        loadLicenses();
+    function login() {
+      const pw = document.getElementById("password").value;
+      if (pw === ADMIN_PASSWORD) {
+        localStorage.setItem("authToken", pw);
+        document.getElementById("login").style.display = "none";
+        document.querySelector(".protected").style.display = "block";
+        document.querySelector("nav").style.display = "block";
+        fetchLicenses();
       } else {
-        alert("Yanlış şifre.");
+        document.getElementById("loginError").innerText = "Hatalı şifre!";
       }
     }
 
-    function generateLicenseKey() {
-      function part() {
-        return Math.random().toString(16).substr(2, 8).toUpperCase();
-      }
-      return `${part().substr(0, 8)}-${part()}-${part()}-${part()}`;
+    if (localStorage.getItem("authToken") === ADMIN_PASSWORD) {
+      document.getElementById("login").style.display = "none";
+      document.querySelector(".protected").style.display = "block";
+      document.querySelector("nav").style.display = "block";
+      fetchLicenses();
     }
 
-    function calculateExpirationDate(days) {
-      const date = new Date();
-      date.setDate(date.getDate() + Number(days));
-      return date.toISOString();
+    function switchTab(tab) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.querySelector(`#${tab}`).classList.add('active');
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.querySelector(`#tab-${tab}`).classList.add('active');
     }
 
-    async function addLicense() {
+    async function createLicense() {
       const playerId = document.getElementById("playerId").value;
       const days = document.getElementById("days").value;
-
-      if (!playerId || !days) return alert("Tüm alanları doldurun.");
-
-      const licenseKey = generateLicenseKey();
-      const expirationDate = calculateExpirationDate(days);
-
-      const response = await fetch(`${API_URL}/create-license`, {
+      const response = await fetch(`${API_BASE}/create-license`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, licenseKey, expirationDate })
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+        },
+        body: JSON.stringify({ playerId, days })
       });
-
       const data = await response.json();
-      alert("Lisans eklendi.");
-      loadLicenses();
+      document.getElementById("createResult").innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      fetchLicenses();
     }
 
-    async function loadLicenses() {
-      const list = document.getElementById("licenseList");
-      list.innerHTML = "Yükleniyor...";
-      const res = await fetch(`${API_URL}/list-licenses`);
-      const data = await res.json();
-      if (!data.licenses.length) return list.innerHTML = "Kayıt bulunamadı.";
+    let allLicenses = {};
 
-      list.innerHTML = "";
-      data.licenses.forEach((l, i) => {
-        const div = document.createElement("div");
-        div.className = "license";
-        div.innerHTML = `
-          <div><span class="icon">🧍</span><b>${l.playerId}</b></div>
-          <div><span class="icon">🔑</span>${l.licenseKey}</div>
-          <div><span class="icon">📅</span>${new Date(l.expirationDate).toLocaleString()}</div>
-          <button onclick="deleteLicense('${l.playerId}', '${l.licenseKey}')">❌ Sil</button>
-          <button onclick="extendLicense('${l.playerId}', '${l.licenseKey}', '${l.expirationDate}')">⏫ 15 Gün Ekle</button>
-        `;
-        list.appendChild(div);
+    async function fetchLicenses() {
+      const response = await fetch(`${API_BASE}/licenses`, {
+        headers: { "Authorization": `Bearer ${localStorage.getItem("authToken")}` }
+      });
+      const data = await response.json();
+      allLicenses = data;
+      renderLicenses(Object.entries(data));
+    }
+
+    function renderLicenses(entries) {
+      const container = document.getElementById("licenseList");
+      container.innerHTML = '';
+      entries.forEach(([key, lic]) => {
+        const daysLeft = Math.ceil((new Date(lic.expirationDate) - new Date()) / (1000 * 60 * 60 * 24));
+        container.innerHTML += `
+<pre>
+🔑 License Key: ${key}
+🎮 Player ID: ${lic.playerId}
+📆 Expiration: ${lic.expirationDate} (${daysLeft} gün kaldı)
+📣 Announcement: ${lic.announcement}
+🧾 Support Devs: ${lic.supportDevs}
+🔁 Refresh Token: ${lic.refreshToken}
+<button class="delete" onclick="deleteLicense('${key}')">🗑️ Sil</button>
+<button class="extend" onclick="extendLicense('${key}', 15)">➕ 15 Gün Uzat</button>
+</pre>`;
       });
     }
 
-    async function deleteLicense(playerId, licenseKey) {
-      if (!confirm("Silmek istediğinizden emin misiniz?")) return;
-      await fetch(`${API_URL}/update-license`, {
+    async function deleteLicense(key) {
+      await fetch(`${API_BASE}/delete-license/${key}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${localStorage.getItem("authToken")}` }
+      });
+      fetchLicenses();
+    }
+
+    async function extendLicense(key, days) {
+      await fetch(`${API_BASE}/extend-license`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, licenseKey, newExpirationDate: "2000-01-01T00:00:00Z" })
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+        },
+        body: JSON.stringify({ licenseKey: key, days })
       });
-      alert("Lisans silindi (geçersiz hale getirildi).");
-      loadLicenses();
+      fetchLicenses();
     }
 
-    async function extendLicense(playerId, licenseKey, currentExpDate) {
-      const current = new Date(currentExpDate);
-      current.setDate(current.getDate() + 15);
-      const newDate = current.toISOString();
-
-      await fetch(`${API_URL}/update-license`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, licenseKey, newExpirationDate: newDate })
-      });
-      alert("15 gün eklendi.");
-      loadLicenses();
+    function filterLicenses() {
+      const term = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = Object.entries(allLicenses).filter(([_, lic]) => lic.playerId.toLowerCase().includes(term));
+      renderLicenses(filtered);
     }
+
+    function exportLicenses() {
+      const blob = new Blob([JSON.stringify(allLicenses, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "licenses.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+	
+	// Sayfa kapandığında oturumu kapat
+window.addEventListener("beforeunload", function () {
+  localStorage.removeItem("authToken");
+});
   </script>
 </body>
 </html>
