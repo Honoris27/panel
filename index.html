@@ -1,175 +1,98 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GladiUsak Admin Panel - Lisans Sistemi</title>
-  <style>
-    body {
-      background: #1a120b;
-      font-family: 'Georgia', serif;
-      color: #f0e6d2;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      background: #2e1e12;
-      padding: 20px;
-      border: 2px solid #a26c3d;
-      border-radius: 12px;
-    }
-    h1, h2 {
-      color: #e0c097;
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-    button {
-      background-color: #a26c3d;
-      color: white;
-      cursor: pointer;
-      margin-top: 15px;
-    }
-    button:hover {
-      background-color: #c79050;
-    }
-    .license {
-      background: #3b2a20;
-      padding: 10px;
-      margin-top: 15px;
-      border-radius: 8px;
-    }
-    .actions button {
-      width: auto;
-      margin-right: 10px;
-    }
-    #loginSection, #panelSection {
-      display: none;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lisans Yönetimi</title>
 </head>
 <body>
-  <div class="container">
-    <div id="loginSection">
-      <h1>GladiUsak Bot Admin Giriş</h1>
-      <label>Şifre:</label>
-      <input type="password" id="adminPassword" />
-      <button onclick="login()">Giriş Yap</button>
-    </div>
+  <h1>Lisans Yönetim Paneli</h1>
+  <button onclick="loadLicenses()">Lisansları Listele</button>
+  <button onclick="createLicense()">Yeni Lisans Oluştur</button>
 
-    <div id="panelSection">
-      <h2>Lisans Ekle</h2>
-      <label>Player ID:</label>
-      <input type="text" id="playerId" />
-      <label>Kaç Günlük:</label>
-      <input type="number" id="days" />
-      <button onclick="createLicense()">Lisans Oluştur</button>
-
-      <h2>Lisansları Listele</h2>
-      <button onclick="listLicenses()">Listele</button>
-      <div id="licenseList"></div>
-    </div>
-  </div>
+  <div id="license-list"></div>
 
   <script>
-    const API_URL = "https://gladiusak.onrender.com/";
-    const ADMIN_PASSWORD = "142536789"; // Değiştirilebilir
+    const serverUrl = "https://gladiusak.onrender.com"; // Sunucu URL'si
 
-    function login() {
-      const pass = document.getElementById("adminPassword").value;
-      if (pass === ADMIN_PASSWORD) {
-        document.getElementById("loginSection").style.display = "none";
-        document.getElementById("panelSection").style.display = "block";
+    // Lisansları listeleme
+    async function loadLicenses() {
+      const response = await fetch(`${serverUrl}/list-licenses`);
+      const data = await response.json();
+
+      let html = "<h2>Lisanslar</h2>";
+      if (data.count > 0) {
+        data.licenses.forEach(license => {
+          html += `
+            <div>
+              <p>Lisans Key: ${license.licenseKey} | Player ID: ${license.playerId} | Expiration: ${license.expirationDate}</p>
+              <button onclick="deleteLicense('${license.licenseKey}', '${license.playerId}')">Sil</button>
+              <button onclick="updateLicense('${license.licenseKey}', '${license.playerId}')">Güncelle</button>
+            </div>
+          `;
+        });
       } else {
-        alert("Hatalı şifre!");
+        html += "<p>Hiç lisans bulunmamaktadır.</p>";
       }
+      document.getElementById("license-list").innerHTML = html;
     }
 
-    async function createLicense() {
-      const playerId = document.getElementById("playerId").value;
-      const days = parseInt(document.getElementById("days").value);
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + days);
+    // Lisans silme
+    async function deleteLicense(licenseKey, playerId) {
+      const response = await fetch(`${serverUrl}/delete-license`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ licenseKey, playerId })
+      });
 
-      const licenseKey = generateFormattedKey();
+      const data = await response.json();
+      alert(data.message);
+      loadLicenses(); // Yeniden listele
+    }
 
-      const res = await fetch(`${API_URL}/create-license`, {
+    // Lisans güncelleme
+    async function updateLicense(licenseKey, playerId) {
+      const newLicenseKey = prompt("Yeni Lisans Key:");
+      const newExpirationDate = prompt("Yeni Son Kullanma Tarihi:");
+
+      const response = await fetch(`${serverUrl}/update-license`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          licenseKey,
+          playerId,
+          newLicenseKey,
+          newExpirationDate
+        })
+      });
+
+      const data = await response.json();
+      alert(data.message);
+      loadLicenses(); // Yeniden listele
+    }
+
+    // Yeni lisans oluşturma
+    async function createLicense() {
+      const playerId = prompt("Player ID girin:");
+      const licenseKey = prompt("Lisans Key girin:");
+      const expirationDate = prompt("Son Kullanma Tarihini girin (YYYY-MM-DD):");
+
+      const response = await fetch(`${serverUrl}/create-license`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({ playerId, licenseKey, expirationDate })
       });
 
-      const data = await res.json();
-      alert(`Lisans oluşturuldu:\nKey: ${licenseKey}`);
+      const data = await response.json();
+      alert(data.message);
+      loadLicenses(); // Yeniden listele
     }
-
-    async function listLicenses() {
-      const res = await fetch(`${API_URL}/list-licenses`);
-      const data = await res.json();
-      const container = document.getElementById("licenseList");
-      container.innerHTML = "";
-
-      data.licenses.forEach((l, index) => {
-        const div = document.createElement("div");
-        div.className = "license";
-        div.innerHTML = `
-          <strong>#${index + 1}</strong><br />
-          Player ID: ${l.playerId}<br />
-          License Key: ${l.licenseKey}<br />
-          Bitiş: ${l.expirationDate}<br />
-          <div class="actions">
-            <button onclick="deleteLicense('${l.licenseKey}', '${l.playerId}')">Sil</button>
-            <button onclick="extendLicense('${l.licenseKey}', '${l.playerId}', '${l.expirationDate}')">15 Gün Ekle</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function generateFormattedKey() {
-      return Array(4).fill(null).map(() => uuidSegment()).join("-");
-    }
-
-    function uuidSegment() {
-      return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-      ).substring(0, 8).toUpperCase();
-    }
-
-    async function deleteLicense(licenseKey, playerId) {
-      await fetch(`${API_URL}/update-license`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, licenseKey, newLicenseKey: "DELETED" })
-      });
-      listLicenses();
-    }
-
-    async function extendLicense(licenseKey, playerId, oldDate) {
-      const old = new Date(oldDate);
-      old.setDate(old.getDate() + 15);
-      await fetch(`${API_URL}/update-license`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, licenseKey, newExpirationDate: old })
-      });
-      listLicenses();
-    }
-
-    // Sayfa ilk açıldığında giriş ekranını göster
-    document.getElementById("loginSection").style.display = "block";
   </script>
 </body>
 </html>
