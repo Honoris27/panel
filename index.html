@@ -1,110 +1,109 @@
-<!-- index.html - Admin Girişli Lisans Paneli -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <title>Lisans Yönetim Paneli</title>
   <style>
-body {
-  font-family: 'Georgia', serif;
-  background: url('https://static.wikia.nocookie.net/gladiatus/images/3/39/Bg_body_game.jpg') repeat center center fixed;
-  background-size: cover;
-  padding: 30px;
-  color: #fff;
-}
+    body {
+      font-family: 'Georgia', serif;
+      background: url('https://static.wikia.nocookie.net/gladiatus/images/3/39/Bg_body_game.jpg') repeat center center fixed;
+      background-size: cover;
+      padding: 30px;
+      color: #fff;
+    }
 
-h2 {
-  color: #ffd700;
-  text-shadow: 2px 2px 5px #000;
-}
+    h2 {
+      color: #ffd700;
+      text-shadow: 2px 2px 5px #000;
+    }
 
-nav, .protected {
-  display: none;
-}
+    nav, .protected {
+      display: none;
+    }
 
-nav {
-  margin-bottom: 20px;
-}
+    nav {
+      margin-bottom: 20px;
+    }
 
-nav button {
-  margin-right: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-  background: linear-gradient(to bottom, #d4af37, #a67c00);
-  color: #fff;
-  border: 2px solid #8b6914;
-  cursor: pointer;
-  border-radius: 10px;
-  box-shadow: 2px 2px 5px #000;
-  font-weight: bold;
-  text-shadow: 1px 1px #000;
-}
+    nav button {
+      margin-right: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: linear-gradient(to bottom, #d4af37, #a67c00);
+      color: #fff;
+      border: 2px solid #8b6914;
+      cursor: pointer;
+      border-radius: 10px;
+      box-shadow: 2px 2px 5px #000;
+      font-weight: bold;
+      text-shadow: 1px 1px #000;
+    }
 
-nav button.active {
-  background: linear-gradient(to bottom, #ffd700, #b8860b);
-}
+    nav button.active {
+      background: linear-gradient(to bottom, #ffd700, #b8860b);
+    }
 
-section {
-  display: none;
-  max-width: 900px;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 20px;
-  border: 2px solid #a67c00;
-  border-radius: 15px;
-  box-shadow: 3px 3px 10px #000;
-}
+    section {
+      display: none;
+      max-width: 900px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border: 2px solid #a67c00;
+      border-radius: 15px;
+      box-shadow: 3px 3px 10px #000;
+    }
 
-section.active {
-  display: block;
-}
+    section.active {
+      display: block;
+    }
 
-label {
-  display: block;
-  margin-top: 10px;
-  font-weight: bold;
-  color: #ffd700;
-}
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #ffd700;
+    }
 
-input {
-  padding: 8px;
-  margin-top: 5px;
-  width: 250px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
+    input {
+      padding: 8px;
+      margin-top: 5px;
+      width: 250px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
 
-button.create, button.delete, button.extend {
-  margin-top: 10px;
-  padding: 8px 16px;
-  font-size: 14px;
-  background: #228B22;
-  color: white;
-  border: 1px solid #145214;
-  cursor: pointer;
-  border-radius: 8px;
-  box-shadow: 1px 1px 5px #000;
-}
+    button.create, button.delete, button.extend {
+      margin-top: 10px;
+      padding: 8px 16px;
+      font-size: 14px;
+      background: #228B22;
+      color: white;
+      border: 1px solid #145214;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 1px 1px 5px #000;
+    }
 
-button.delete {
-  background: #B22222;
-  border-color: #7a1b1b;
-}
+    button.delete {
+      background: #B22222;
+      border-color: #7a1b1b;
+    }
 
-button.extend {
-  background: #DAA520;
-  border-color: #8B6914;
-}
+    button.extend {
+      background: #DAA520;
+      border-color: #8B6914;
+    }
 
-.result-box, pre {
-  white-space: pre-wrap;
-  background: rgba(255, 255, 255, 0.9);
-  color: #000;
-  padding: 10px;
-  border: 1px solid #ccc;
-  margin-top: 10px;
-  border-radius: 10px;
-  font-family: 'Courier New', monospace;
-}
+    .result-box, pre {
+      white-space: pre-wrap;
+      background: rgba(255, 255, 255, 0.9);
+      color: #000;
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+    }
   </style>
 </head>
 <body>
@@ -174,17 +173,26 @@ button.extend {
     async function createLicense() {
       const playerId = document.getElementById("playerId").value;
       const days = document.getElementById("days").value;
+      const licenseKey = `LICENSE-${uuid.v4()}`;  // Benzersiz bir key oluşturuluyor
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + parseInt(days)); // Gün ekleniyor
+
       const response = await fetch(`${API_BASE}/create-license`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("authToken")}`
         },
-        body: JSON.stringify({ playerId, days })
+        body: JSON.stringify({
+          playerId,
+          licenseKey,
+          expirationDate: expirationDate.toISOString() // ISO string formatında tarih
+        })
       });
+
       const data = await response.json();
       document.getElementById("createResult").innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-      fetchLicenses();
+      fetchLicenses();  // Yeni lisansı göster
     }
 
     let allLicenses = {};
@@ -252,11 +260,12 @@ button.extend {
       a.click();
       URL.revokeObjectURL(url);
     }
-	
-	// Sayfa kapandığında oturumu kapat
-window.addEventListener("beforeunload", function () {
-  localStorage.removeItem("authToken");
-});
+
+    // Sayfa kapandığında oturumu kapat
+    window.addEventListener("beforeunload", function () {
+      localStorage.removeItem("authToken");
+    });
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/uuid@8.3.2/dist/uuid.min.js"></script>
 </body>
 </html>
