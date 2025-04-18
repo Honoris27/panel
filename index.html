@@ -1,98 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lisans Yönetimi</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Lisans Yönetim Paneli</h1>
-  <button onclick="loadLicenses()">Lisansları Listele</button>
-  <button onclick="createLicense()">Yeni Lisans Oluştur</button>
+    <div class="login-form" id="loginForm">
+        <h2>Admin Login</h2>
+        <input type="password" id="password" placeholder="Enter password" />
+        <button onclick="login()">Login</button>
+    </div>
+    <div class="panel" id="panel" style="display:none;">
+        <h2>Admin Panel</h2>
+        <button onclick="logout()">Logout</button>
+        
+        <h3>Create License</h3>
+        <input type="text" id="playerId" placeholder="Enter Player ID" />
+        <input type="date" id="expirationDate" placeholder="Enter Expiration Date" />
+        <button onclick="createLicense()">Create License</button>
+        
+        <h3>List Licenses</h3>
+        <div id="licenses"></div>
+    </div>
 
-  <div id="license-list"></div>
-
-  <script>
-    const serverUrl = "https://gladiusak.onrender.com"; // Sunucu URL'si
-
-    // Lisansları listeleme
-    async function loadLicenses() {
-      const response = await fetch(`${serverUrl}/list-licenses`);
-      const data = await response.json();
-
-      let html = "<h2>Lisanslar</h2>";
-      if (data.count > 0) {
-        data.licenses.forEach(license => {
-          html += `
-            <div>
-              <p>Lisans Key: ${license.licenseKey} | Player ID: ${license.playerId} | Expiration: ${license.expirationDate}</p>
-              <button onclick="deleteLicense('${license.licenseKey}', '${license.playerId}')">Sil</button>
-              <button onclick="updateLicense('${license.licenseKey}', '${license.playerId}')">Güncelle</button>
-            </div>
-          `;
-        });
-      } else {
-        html += "<p>Hiç lisans bulunmamaktadır.</p>";
-      }
-      document.getElementById("license-list").innerHTML = html;
-    }
-
-    // Lisans silme
-    async function deleteLicense(licenseKey, playerId) {
-      const response = await fetch(`${serverUrl}/delete-license`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ licenseKey, playerId })
-      });
-
-      const data = await response.json();
-      alert(data.message);
-      loadLicenses(); // Yeniden listele
-    }
-
-    // Lisans güncelleme
-    async function updateLicense(licenseKey, playerId) {
-      const newLicenseKey = prompt("Yeni Lisans Key:");
-      const newExpirationDate = prompt("Yeni Son Kullanma Tarihi:");
-
-      const response = await fetch(`${serverUrl}/update-license`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          licenseKey,
-          playerId,
-          newLicenseKey,
-          newExpirationDate
-        })
-      });
-
-      const data = await response.json();
-      alert(data.message);
-      loadLicenses(); // Yeniden listele
-    }
-
-    // Yeni lisans oluşturma
-    async function createLicense() {
-      const playerId = prompt("Player ID girin:");
-      const licenseKey = prompt("Lisans Key girin:");
-      const expirationDate = prompt("Son Kullanma Tarihini girin (YYYY-MM-DD):");
-
-      const response = await fetch(`${serverUrl}/create-license`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ playerId, licenseKey, expirationDate })
-      });
-
-      const data = await response.json();
-      alert(data.message);
-      loadLicenses(); // Yeniden listele
-    }
-  </script>
+    <script src="panel.js"></script>
 </body>
 </html>
